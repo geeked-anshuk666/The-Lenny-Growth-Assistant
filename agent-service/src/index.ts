@@ -49,7 +49,7 @@ async function generateLLMResponse(
 
     if (activeProvider === 'gemini') {
         apiKey = process.env.GEMINI_API_KEY || '';
-        modelName = modelOverride || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+        modelName = modelOverride || process.env.GEMINI_MODEL || 'gemini-3.6-flash';
     } else if (activeProvider === 'groq') {
         apiKey = process.env.GROQ_API_KEY || '';
         modelName = modelOverride || process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
