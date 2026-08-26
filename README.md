@@ -12,40 +12,107 @@
 - **Premium UI with landing page & onboarding** - Immersive deep-cobalt landing page with animated orbs; name modal personalises the session. Chat names auto-derived from first message. ChatGPT-style sidebar with rename, pin, and delete per chat.
 - **Live error transparency** - Exact LLM API error strings (rate limits, model 404s) surface as top-right toast notifications instead of being swallowed by generic fallback text.
 
-## ⚡ Quickstart (Copy-Paste Steps)
+## ⚡ Quickstart (Reproducible Setup Guide)
 
-If you have **Docker Desktop** running and **Ollama** installed on your host machine, you can run the entire stack in 3 simple steps:
+Follow either **Method 1 (Docker Desktop - Recommended)** or **Method 2 (Manual Setup)** to spin up the application on your environment.
 
-### 1. Setup Environment
+---
+
+### Method 1: Docker Desktop Setup (Recommended)
+
+Running via Docker spins up all services (`api`, `agent-service`, `frontend`) in containerized environments.
+
+#### Step 1: Environment Configuration
 ```bash
 # Clone the repository
 git clone https://github.com/geeked-anshuk666/The-Lenny-Growth-Assistant.git
 cd The-Lenny-Growth-Assistant
 
-# Copy env template and pull model
+# Copy environment template
 cp .env.example .env
+
+# Pull local Ollama model (ensure Ollama host service is running)
 ollama pull qwen2.5:3b
 ```
-*(Open `.env` and fill in your `NEON_DATABASE_URL`, `GEMINI_API_KEY`, and `GROQ_API_KEY`)*
 
-### 2. Ingest transcripts into NeonDB
+#### Step 2: Choose Database Mode & Ingest Data
+
+##### Option A: Instant Cloud DB (NeonDB - Default)
+1. Open `.env` and set `NEON_DATABASE_URL` (or use the pre-ingested evaluation string provided in the submission notes).
+2. If using your own fresh NeonDB database, run ingestion **once** from inside the API container (or locally in python environment):
+   ```bash
+   # Build and start services
+   docker compose up --build -d
+
+   # Execute ingestion inside the running api container
+   docker compose exec api python ingest.py
+   ```
+   > ℹ️ **Note on Ingestion:** `python ingest.py` parses all 269 episode transcripts in `episodes/`, generates 384-dimensional embeddings via local `sentence-transformers`, and populates `transcript_chunks`. **Ingestion only needs to be run ONCE.** Re-run it ONLY if the `episodes/` corpus is modified, expanded, or reset.
+
+##### Option B: 100% Offline Local Docker Postgres (`pgvector`)
+If you want to run completely offline without an external cloud database:
+1. Open `.env` and uncomment:
+   `DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@db:5432/lenny_assistant`
+2. Spin up Docker Compose with the `local-db` profile enabled:
+   ```bash
+   docker compose --profile local-db up --build -d
+   ```
+3. Run the ingestion script to populate your local Postgres vector store:
+   ```bash
+   docker compose exec api python ingest.py
+   ```
+
+#### Step 3: Access Application
+Open **[http://localhost:5173](http://localhost:5173)** in your browser!
+
+---
+
+### Method 2: Manual Setup (Bare-Metal / Local Development)
+
+If you prefer to run services individually without Docker:
+
+#### Step 1: Backend & Database Ingestion
 ```bash
+# 1. Navigate to API directory & setup Python virtual environment
 cd api
 python -m venv venv
-# On Windows:
+
+# Activate virtual environment
+# Windows:
 venv\Scripts\activate
-# On macOS/Linux:
+# macOS/Linux:
 # source venv/bin/activate
 
+# 2. Install dependencies
 pip install -r requirements.txt
+
+# 3. Configure environment variables in root .env file
+# Ensure NEON_DATABASE_URL or local DATABASE_URL is set in .env
+
+# 4. Ingest transcripts into database (Must be run ONCE per corpus)
 python ingest.py
-cd ..
+
+# 5. Start FastAPI server
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 3. Spin up the App
+#### Step 2: Agent Microservice (Node.js)
+Open a new terminal window:
 ```bash
-docker compose up --build
+cd agent-service
+npm install
+npm run dev
 ```
+
+#### Step 3: Frontend (React 18 + Vite)
+Open a third terminal window:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+#### Step 4: Access Application
 Open **[http://localhost:5173](http://localhost:5173)** in your browser!
 
 ---

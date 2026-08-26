@@ -8,7 +8,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${NEON_DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL:-${NEON_DATABASE_URL}}
       - AGENT_SERVICE_URL=http://agent-service:3000
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash-lite}
@@ -22,6 +22,20 @@ services:
       - "host.docker.internal:host-gateway"
     depends_on:
       - agent-service
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: lenny_local_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgrespassword
+      - POSTGRES_DB=lenny_assistant
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    profiles:
+      - local-db
 
   agent-service:
     build:
@@ -52,3 +66,6 @@ services:
       - "5173:5173"
     depends_on:
       - api
+
+volumes:
+  pgdata:
