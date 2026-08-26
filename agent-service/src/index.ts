@@ -26,6 +26,14 @@ function cleanChatHistory(messages: { role: string; content: string }[]) {
     return collapsed;
 }
 
+interface LLMResponse {
+    text: string;
+    providerUsed: string;
+    modelUsed: string;
+    rateLimited: boolean;
+    fallbackModel: string | null;
+}
+
 // Setup Pi-AI mock/wrapper to support local & cloud providers cleanly
 async function generateLLMResponse(
     messages: { role: string; content: string }[],
@@ -33,12 +41,11 @@ async function generateLLMResponse(
     provider: string,
     isEssay: boolean,
     modelOverride?: string
-) {
+): Promise<LLMResponse> {
     let activeProvider = provider;
     let apiKey = '';
     let modelName = '';
     let baseUrl = '';
-    let isRateLimited = false;
 
     if (activeProvider === 'gemini') {
         apiKey = process.env.GEMINI_API_KEY || '';
@@ -183,7 +190,9 @@ async function generateLLMResponse(
     return {
         text: replyText,
         providerUsed: activeProvider,
-        modelUsed: modelName
+        modelUsed: modelName,
+        rateLimited: false,
+        fallbackModel: null
     };
 }
 
@@ -194,7 +203,7 @@ async function generateLLMResponseWithRotation(
     initialProvider: string,
     isEssay: boolean,
     modelOverride?: string
-) {
+): Promise<LLMResponse> {
     const rotationList = ['gemini', 'groq', 'ollama'];
     let startIndex = rotationList.indexOf(initialProvider);
     if (startIndex === -1) startIndex = 0;
@@ -206,7 +215,11 @@ async function generateLLMResponseWithRotation(
         const overrideForThisProvider = currentProvider === initialProvider ? modelOverride : undefined;
         try {
             const result = await generateLLMResponse(messages, systemPrompt, currentProvider, isEssay, overrideForThisProvider);
-            return result;
+            return {
+                ...result,
+                rateLimited: currentProvider !== initialProvider,
+                fallbackModel: currentProvider !== initialProvider ? result.modelUsed : null
+            };
         } catch (error) {
             console.warn(`Provider ${currentProvider} failed, rotating to next...`, error);
             lastError = error;
