@@ -69,7 +69,7 @@ flowchart LR
    If top-k similarity is below a threshold, respond that the corpus
    doesn't cover the question — never fabricate.
 6. Re-ingestion = re-running `python ingest.py` manually. No live
-   refresh pipeline (see PRD.md assumptions).
+   refresh pipeline.
 
 ## 4. Agent routing (Pi-based, multi-provider)
 
@@ -82,9 +82,9 @@ flowchart LR
   by the user — the agent service respects this for the primary provider
   and falls back to provider defaults on rotation.
 - Ship 30/30 essay generation is a distinct **skill**: its own system
-  prompt (built from the real Ship 30/30 framework, see `meta_docs/AI_rules.md §2`)
-  plus output validators for word count (~1,250) and heading/hook
-  presence — not folded into the general chat prompt.
+  prompt (built from the real Ship 30/30 framework) plus output validators
+  for word count (~1,250) and heading/hook presence — not folded into the
+  general chat prompt.
 - Artifact generation: LLM wraps output in ` ```html ` or ` ```markdown `
   fences; the agent service detects this regex and returns the extracted
   content as a typed `artifact` field.
@@ -102,7 +102,7 @@ flowchart LR
   response — not the configured default — so a fallback mid-demo is shown
   honestly, not hidden.
 
-## 6. Security (artifact rendering — the one security topic the brief asks for)
+## 6. Security (artifact rendering)
 
 - Generated HTML renders inside a **sandboxed iframe**
   (`sandbox="allow-same-origin"` only — no `allow-scripts`), so no
@@ -110,9 +110,7 @@ flowchart LR
 - Markdown renders via `react-markdown` with `remarkGfm`. HTML pass-through
   is not enabled, preventing script injection through Markdown.
 - Standard API-level validation (Pydantic schemas, parameterized ORM
-  queries via SQLAlchemy) covers injection risk for persistence.
-- No broader security program — see TRD.md §3 for why that's explicitly
-  out of scope.
+  queries via SQLAlchemy) covers SQL injection risk for persistence.
 
 ## 7. Deployment topology
 

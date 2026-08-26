@@ -10,15 +10,53 @@
 - **Multi-provider LLM toggle** — Switch between Google Gemini, Groq (cloud), and Ollama (local) with per-provider dynamic model selection, live from the UI. No restart needed.
 - **Session persistence** — All chats stored in NeonDB Postgres; sessions survive page reloads.
 
+## ⚡ Quickstart (Copy-Paste Steps)
+
+If you have **Docker Desktop** running and **Ollama** installed on your host machine, you can run the entire stack in 3 simple steps:
+
+### 1. Setup Environment
+```bash
+# Clone the repository
+git clone https://github.com/geeked-anshuk666/The-Lenny-Growth-Assistant.git
+cd The-Lenny-Growth-Assistant
+
+# Copy env template and pull model
+cp .env.example .env
+ollama pull qwen2.5:3b
+```
+*(Open `.env` and fill in your `NEON_DATABASE_URL`, `GEMINI_API_KEY`, and `GROQ_API_KEY`)*
+
+### 2. Ingest transcripts into NeonDB
+```bash
+cd api
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+# source venv/bin/activate
+
+pip install -r requirements.txt
+python ingest.py
+cd ..
+```
+
+### 3. Spin up the App
+```bash
+docker compose up --build
+```
+Open **[http://localhost:5173](http://localhost:5173)** in your browser!
+
+---
+
 ## Why this stack
 
 | Choice | Reason |
 |---|---|
-| **FastAPI** | Required by the brief |
-| **Pi Coding Agent** (`pi-ai` + `pi-agent-core`) | Named alternative to Claude Agent SDK in the brief; natively multi-provider (Gemini, Groq, Ollama) without a translation proxy |
-| **Gemini + Groq + Ollama** | Genuinely free tiers, no credit card required (Anthropic/OpenAI require billing — see PRD.md §2 Assumptions) |
-| **NeonDB** | Same category as Supabase/Railway (brief says "you may use"); free managed Postgres + pgvector, no card |
-| **Local sentence-transformers embeddings** | Offline, zero rate-limits, ~80 MB model |
+| **FastAPI** | Fast, modern, asynchronous web framework for Python with native Pydantic validation |
+| **Pi Coding Agent** (`pi-ai` + `pi-agent-core`) | Natively multi-provider wrapper supporting Gemini, Groq, and Ollama out-of-the-box |
+| **Gemini + Groq + Ollama** | Scalable, performant cloud APIs paired with robust local offline capability |
+| **NeonDB** | Fully managed serverless Postgres with pgvector for instant vector queries |
+| **Local sentence-transformers embeddings** | Offline, zero rate-limits, ~80 MB model running locally on CPU |
 
 ## Prerequisites
 
@@ -26,119 +64,45 @@
 |---|---|
 | **Docker + Docker Compose** | Required to run `api`, `agent-service`, and `frontend` containers |
 | **Node.js 22.12+** | For local development of `agent-service` and `frontend` |
-| **Ollama** | Install from [ollama.com](https://ollama.com) — runs as a host-level process (not containerized — GPU passthrough in Docker is unreliable for demos) |
-| **NeonDB project** | Free at [neon.tech](https://neon.tech) — no payment required. Enable the `pgvector` extension in your project. |
-| **Google AI Studio API key** | Free at [aistudio.google.com](https://aistudio.google.com) — no payment required |
-| **Groq API key** | Free at [console.groq.com](https://console.groq.com) — no payment required |
+| **Ollama** | Install from [ollama.com](https://ollama.com) — runs as a host-level process |
+| **NeonDB project** | Free at [neon.tech](https://neon.tech) — enable the `pgvector` extension |
+| **Google AI Studio API key** | Get from [aistudio.google.com](https://aistudio.google.com) |
+| **Groq API key** | Get from [console.groq.com](https://console.groq.com) |
 
-## Setup
+## Setup & Running Locally (No Docker)
 
-### 1. Clone and configure
+If you prefer to run the services bare-metal on your laptop:
 
+### Terminal 1: FastAPI Backend
 ```bash
-git clone <repo-url>
-cd The-Lenny-Growth-Assistant
-
-# Copy the example env and fill in your credentials
-cp .env.example .env
-```
-
-Edit `.env` and set:
-
-```env
-NEON_DATABASE_URL=postgresql+asyncpg://<user>:<password>@<host>/<db>?sslmode=require
-GEMINI_API_KEY=your_key_here
-GROQ_API_KEY=your_key_here
-OLLAMA_BASE_URL=http://localhost:11434   # or http://host.docker.internal:11434 inside Docker
-OLLAMA_MODEL=qwen2.5:3b
-GEMINI_MODEL=gemini-2.0-flash-lite
-GROQ_MODEL=openai/gpt-oss-120b
-LLM_PROVIDER=gemini
-LLM_PROVIDER_FALLBACK=ollama
-```
-
-### 2. Pull the Ollama model
-
-```bash
-ollama pull qwen2.5:3b
-```
-
-### 3. Ingest transcripts into NeonDB
-
-```bash
-# First time only — populates the transcript_chunks table
-cd api
-python -m venv venv
-venv\Scripts\activate       # Windows
-# source venv/bin/activate  # macOS/Linux
-pip install -r requirements.txt
-python ingest.py
-```
-
-The ingestion script is idempotent — safe to re-run (skips already-ingested episodes).
-
-### 4. Start the full stack
-
-**Option A — Docker Compose (recommended)**
-
-```bash
-# From the repo root
-docker compose up --build
-```
-
-Services started:
-- `api` → http://localhost:8000
-- `agent-service` → http://localhost:3000 (internal only)
-- `frontend` → http://localhost:5173
-
-**Option B — Local development (3 terminals)**
-
-```bash
-# Terminal 1: FastAPI backend
 cd api
 venv\Scripts\activate
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
 
-# Terminal 2: Agent service
+### Terminal 2: Agent Service
+```bash
 cd agent-service
 npm install
 npm run dev
+```
 
-# Terminal 3: Frontend
+### Terminal 3: Frontend
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### 5. Verify health
+## Running Tests
 
-```bash
-curl http://localhost:8000/health
-# Expected: {"status": "ok", "database": "connected", "embeddings_model": "loaded"}
-
-curl http://localhost:3000/health
-# Expected: {"status": "ok", ...}
-```
-
-### 6. Open the app
-
-Navigate to **http://localhost:5173** in your browser.
-
-## Running tests
-
+To run the automated API and integration test suite:
 ```bash
 cd api
 venv\Scripts\activate
-pip install pytest pytest-asyncio httpx
+pip install -r requirements.txt
 pytest tests/ -v
 ```
-
-The test suite covers:
-- Session creation and persistence
-- RAG retrieval (grounded answer with citation)
-- Hallucination guardrail (no-context question → explicit decline)
-- Provider fallback routing
-- Artifact extraction
 
 See `docs/testing_strategy.md` for the full test plan.
 
@@ -150,7 +114,7 @@ See `docs/testing_strategy.md` for the full test plan.
 | `embeddings_model: unloaded` in `/health` | `pip install sentence-transformers` in your venv; first load may take ~60s |
 | No answers / empty context | Run `python ingest.py` — the `transcript_chunks` table may be empty |
 | Ollama timeout | Ensure Ollama is running (`ollama serve`) and the model is pulled (`ollama pull qwen2.5:3b`) |
-| Groq rate limit warning in UI | The UI will auto-switch to a fallback model and show an amber banner — this is expected behaviour on free tier |
+| Groq rate limit warning in UI | The UI will auto-switch to a fallback model and show an amber banner |
 | Docker Ollama connectivity | Set `OLLAMA_BASE_URL=http://host.docker.internal:11434` in `.env` for Docker containers to reach the host Ollama |
 
 ## Project structure
@@ -175,15 +139,3 @@ See `docs/testing_strategy.md` for the full test plan.
 ├── design.md               # UI/UX design spec
 └── architecture.md         # System architecture
 ```
-
-## Key deliverables (per assignment brief)
-
-| File | Status |
-|---|---|
-| `README.md` | ✅ This file |
-| `PRD.md` | ✅ `PRD.md` (also in `meta_docs/`) |
-| `design.md` | ✅ `design.md` (also in `meta_docs/`) |
-| `architecture.md` | ✅ `architecture.md` (also in `meta_docs/`) |
-| `agent-transcripts/` | ✅ Raw session logs, secrets scrubbed |
-| Tests | ✅ `api/tests/` — automated + manual UI test plan |
-| Demo video | 📹 See `agent-transcripts/demo_notes.md` |
