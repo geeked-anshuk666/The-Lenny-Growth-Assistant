@@ -56,8 +56,14 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser!
 #### 💡 100% Offline Local Database Option (Optional)
 If you prefer running a local Postgres `pgvector` container without cloud dependencies:
 1. In `.env`, uncomment: `DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@db:5432/lenny_assistant`
-2. Start Docker with local database profile: `docker compose --profile local-db up --build -d`
-3. Run local ingestion: `docker compose exec api python ingest.py`
+2. Spin up containers with the local database profile:
+   ```bash
+   docker compose --profile local-db up --build -d
+   ```
+3. Run the ingestion command **after containers are up** to populate the local database:
+   ```bash
+   docker compose exec api python ingest.py
+   ```
 
 ---
 
