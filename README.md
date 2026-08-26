@@ -14,105 +14,86 @@
 
 ## ⚡ Quickstart (Reproducible Setup Guide)
 
-Follow either **Method 1 (Docker Desktop - Recommended)** or **Method 2 (Manual Setup)** to spin up the application on your environment.
+Follow **Method 1 (Docker Setup - Recommended)** to spin up the entire application stack.
 
 ---
 
 ### Method 1: Docker Desktop Setup (Recommended)
 
-Running via Docker spins up all services (`api`, `agent-service`, `frontend`) in containerized environments.
+Running via Docker spins up `api`, `agent-service`, and `frontend` automatically.
 
-#### Step 1: Environment Configuration
+#### Step 1: Clone & Configure Environment
 ```bash
-# Clone the repository
 git clone https://github.com/geeked-anshuk666/The-Lenny-Growth-Assistant.git
 cd The-Lenny-Growth-Assistant
 
-# Copy environment template
+# Create your .env file
 cp .env.example .env
 
-# Pull local Ollama model (ensure Ollama host service is running)
+# Pull local LLM model (ensure Ollama app/service is running on host)
 ollama pull qwen2.5:3b
 ```
+*(In `.env`, set `NEON_DATABASE_URL` with your NeonDB connection string, or use the pre-ingested evaluation database string provided in submission notes).*
 
-#### Step 2: Choose Database Mode & Ingest Data
-
-##### Option A: Instant Cloud DB (NeonDB - Default)
-1. Open `.env` and set `NEON_DATABASE_URL` (or use the pre-ingested evaluation string provided in the submission notes).
-2. If using your own fresh NeonDB database, run ingestion **once** from inside the API container (or locally in python environment):
-   ```bash
-   # Build and start services
-   docker compose up --build -d
-
-   # Execute ingestion inside the running api container
-   docker compose exec api python ingest.py
-   ```
-   > ℹ️ **Note on Ingestion:** `python ingest.py` parses all 269 episode transcripts in `episodes/`, generates 384-dimensional embeddings via local `sentence-transformers`, and populates `transcript_chunks`. **Ingestion only needs to be run ONCE.** Re-run it ONLY if the `episodes/` corpus is modified, expanded, or reset.
-
-##### Option B: 100% Offline Local Docker Postgres (`pgvector`)
-If you want to run completely offline without an external cloud database:
-1. Open `.env` and uncomment:
-   `DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@db:5432/lenny_assistant`
-2. Spin up Docker Compose with the `local-db` profile enabled:
-   ```bash
-   docker compose --profile local-db up --build -d
-   ```
-3. Run the ingestion script to populate your local Postgres vector store:
-   ```bash
-   docker compose exec api python ingest.py
-   ```
-
-#### Step 3: Access Application
+#### Step 2: Spin Up Containers
+```bash
+docker compose up --build -d
+```
 Open **[http://localhost:5173](http://localhost:5173)** in your browser!
+
+---
+
+#### 💡 Ingestion Guide (Only Needed for New/Fresh Databases)
+- **Default Pre-Ingested NeonDB:** If using the provided NeonDB database string, **no ingestion is needed**. All 269 episodes are pre-indexed!
+- **If connecting a fresh empty database**, run this exact command **once** to populate your vector store:
+  ```bash
+  docker compose exec api python ingest.py
+  ```
+  *(Parses 269 episode transcripts in `episodes/`, generates 384-dim embeddings locally, and populates `transcript_chunks`).*
+
+---
+
+#### 💡 100% Offline Local Database Option (Optional)
+If you prefer running a local Postgres `pgvector` container without cloud dependencies:
+1. In `.env`, uncomment: `DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@db:5432/lenny_assistant`
+2. Start Docker with local database profile: `docker compose --profile local-db up --build -d`
+3. Run local ingestion: `docker compose exec api python ingest.py`
 
 ---
 
 ### Method 2: Manual Setup (Bare-Metal / Local Development)
 
-If you prefer to run services individually without Docker:
+If running services individually outside Docker:
 
-#### Step 1: Backend & Database Ingestion
+#### 1. API & Ingestion
 ```bash
-# 1. Navigate to API directory & setup Python virtual environment
 cd api
 python -m venv venv
 
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-# source venv/bin/activate
-
-# 2. Install dependencies
+# Windows: venv\Scripts\activate  |  macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Configure environment variables in root .env file
-# Ensure NEON_DATABASE_URL or local DATABASE_URL is set in .env
-
-# 4. Ingest transcripts into database (Must be run ONCE per corpus)
+# Run ingestion (only needed ONCE for empty DBs)
 python ingest.py
 
-# 5. Start FastAPI server
+# Start FastAPI server
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### Step 2: Agent Microservice (Node.js)
-Open a new terminal window:
+#### 2. Agent Microservice (New Terminal)
 ```bash
 cd agent-service
 npm install
 npm run dev
 ```
 
-#### Step 3: Frontend (React 18 + Vite)
-Open a third terminal window:
+#### 3. Frontend UI (New Terminal)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-#### Step 4: Access Application
 Open **[http://localhost:5173](http://localhost:5173)** in your browser!
 
 ---
