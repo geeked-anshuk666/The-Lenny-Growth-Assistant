@@ -172,6 +172,11 @@ To support the Pi Coding Agent engine (`pi-ai` and `pi-agent-core` which are Typ
 ### 4. Single-Tenant Session Model
 - **Trade-off:** The project uses session-based tracking via client-side generated UUIDs. There is no user authentication, authorization, or database row-level security. This is optimized for quick local evaluation.
 
+### 5. RAG Vector Search Limitation (Compound Prompts)
+- **Limitation:** Standard vector-based RAG retrieves the top $N$ chunks (Top-K=4) closest to the embedded query vector. If a user asks a compound question combining two distinct topics from different parts of a transcript (e.g., *"What did Brian Chesky say about detail-oriented leadership? And how does he describe flat design ending?"*), the query embedding lies between the two clusters. This can result in retrieving chunks that cover only one topic, or neither well.
+- **Impact:** Since the LLM is strictly prompted to stay in character and only answer from the provided context (preventing hallucination), it will correctly refuse to answer when the RAG pipeline fails to retrieve both paragraphs.
+- **Mitigation:** Users should split compound queries into separate prompts (e.g., ask about detail-oriented leadership first, then flat design separately) so that vector search can cleanly target each chunk.
+
 ---
 
 ## 🚫 Out of Scope (Currently)
