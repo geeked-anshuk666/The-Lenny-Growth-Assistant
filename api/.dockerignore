@@ -1,0 +1,29 @@
+# Python artifacts — never ship these into the image
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Virtual environment — builder creates its own venv from requirements.txt
+venv/
+.venv/
+env/
+
+# Secrets
+.env
+.env.*
+
+# Test infrastructure — not needed in the running container
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Dev/editor noise
+.git/
+.gitignore
+*.md
+*.log

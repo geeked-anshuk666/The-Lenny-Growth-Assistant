@@ -1,0 +1,14 @@
+# Node artifacts — builder runs npm ci from package.json directly
+node_modules/
+
+# Compiled output — builder produces this; runner stage copies from builder
+dist/
+
+# Secrets
+.env
+.env.*
+
+# Dev/editor noise
+.git/
+*.md
+*.log

@@ -44,9 +44,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # Optional: override at build time with --build-arg VITE_API_URL=http://yourhost:8000
+        # Default in App.tsx is http://localhost:8000, which works for local Docker.
+        VITE_API_URL: ${VITE_API_URL:-}
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:8000
     depends_on:
       - api

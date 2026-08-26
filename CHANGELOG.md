@@ -6,6 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Multi-stage `api/Dockerfile` — builder stage installs deps + pre-downloads sentence-transformers into a venv; runner stage copies only venv + app code into a clean `python:3.11-slim` image
+- Multi-stage `agent-service/Dockerfile` — builder compiles TypeScript; runner uses `npm ci --omit=dev` so `ts-node-dev`, `typescript`, and all `@types/*` packages are excluded from production
+- Multi-stage `frontend/Dockerfile` — builder runs `vite build`; runner is `nginx:1.27-alpine` serving static assets (~25MB final image vs ~600MB dev server)
+- `frontend/nginx.conf` — SPA routing fallback (`try_files $uri /index.html`) + 1-year `Cache-Control: immutable` for Vite hashed asset filenames
+- `api/.dockerignore`, `agent-service/.dockerignore`, `frontend/.dockerignore` — exclude `node_modules/`, `venv/`, `.env`, `__pycache__/`, `tests/` from build context (context drops from ~1GB → <10MB)
+- `VITE_API_URL` build-arg in `docker-compose.yml` frontend service for override at build time
+- `.private_docs/Optimizations.md` — full historical log of every optimization applied across all project phases
+
 - `GET /provider/models?provider=X` endpoint in `agent-service` — proxies live model lists from Gemini, Groq, and Ollama APIs
 - `GET /provider/models` FastAPI proxy endpoint — forwards to agent-service so frontend only needs one backend origin
 - Dynamic per-provider model dropdown in `frontend/src/App.tsx` — fetches live model list on provider change, spins while loading
