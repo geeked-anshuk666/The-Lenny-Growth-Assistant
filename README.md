@@ -1,6 +1,6 @@
 # Lenny's Growth Assistant
 
-> A grounded conversational assistant over Lenny's Podcast transcripts (269 episodes). Answers product/growth questions with timestamped citations linking to the exact YouTube moment, generates Ship 30/30-style essays, and produces Markdown/HTML artifacts rendered in a sandboxed in-app viewer.
+> A grounded conversational assistant over Lenny's Podcast transcripts (269 episodes). Answers product/growth questions with timestamped citations linking to the exact YouTube moment, generates Ship 30/30-style essays, and produces Markdown/HTML artifacts rendered in a sandboxed in-app viewer. Includes a 5:31 min comprehensive video demonstration covering all assignment requirements.
 
 ## What it does
 
