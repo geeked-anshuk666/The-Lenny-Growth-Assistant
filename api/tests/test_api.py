@@ -27,17 +27,9 @@ BASE_URL = os.getenv("TEST_API_URL", "http://localhost:8000")
 TIMEOUT = 60.0  # seconds — local Ollama can be slow
 
 
-@pytest_asyncio.fixture(scope="session")
-def event_loop():
-    """Create a session-scoped event loop."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def client():
-    """Shared async HTTP client for all tests."""
+    """Shared async HTTP client for all tests, recreated per test to avoid loop closure issues."""
     async with httpx.AsyncClient(base_url=BASE_URL, timeout=TIMEOUT) as c:
         yield c
 
