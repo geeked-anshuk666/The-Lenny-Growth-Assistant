@@ -45,11 +45,13 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser!
 
 #### 💡 Ingestion Guide (Only Needed for New/Fresh Databases)
 - **Default Pre-Ingested NeonDB:** If using the provided NeonDB database string, **no ingestion is needed**. All 269 episodes are pre-indexed!
-- **If connecting a fresh empty database**, run this exact command **once** to populate your vector store:
-  ```bash
-  docker compose exec api python ingest.py
-  ```
-  *(Parses 269 episode transcripts in `episodes/`, generates 384-dim embeddings locally, and populates `transcript_chunks`).*
+- **If connecting a fresh empty database**:
+  1. First start containers: `docker compose up --build -d`
+  2. Then run this exact command **after containers are up** to populate your database:
+     ```bash
+     docker compose exec api python ingest.py
+     ```
+     *(Parses 269 episode transcripts in `episodes/`, generates 384-dim embeddings locally, and populates `transcript_chunks`).*
 
 ---
 
