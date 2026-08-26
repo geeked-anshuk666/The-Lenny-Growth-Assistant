@@ -9,17 +9,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a virtual environment so we can copy it cleanly in the next stage
+# Create a virtual environment
 RUN python -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 
+# Install CPU-only PyTorch FIRST to prevent pip from pulling 2.5GB CUDA packages
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
 COPY requirements.txt .
-# --no-cache-dir keeps the layer lean; all wheels compile here
+# --no-cache-dir keeps the layer lean
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the sentence-transformers model into the venv's cache directory.
-# This bakes the ~80MB model into the image at build time so containers start
-# instantly with no network dependency at runtime.
+# Pre-download the sentence-transformers model into the venv's cache directory
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 
@@ -33,10 +34,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the pre-built venv (includes installed packages + cached ST model)
+# Copy the pre-built venv
 COPY --from=builder /app/venv /app/venv
 
-# Copy only application source — .dockerignore excludes venv/, __pycache__, tests/, .env
+# Copy application source
 COPY . .
 
 ENV PATH="/app/venv/bin:$PATH"

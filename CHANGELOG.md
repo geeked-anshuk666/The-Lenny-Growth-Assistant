@@ -36,6 +36,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `generateLLMResponseWithRotation` in `agent-service` now accepts and threads `modelOverride` — only overrides primary provider, fallbacks use their defaults
 
 ### Fixed
+- PyTorch CUDA download bloat & timeout in Docker build — `api/Dockerfile` now explicitly pre-installs CPU-only PyTorch (`torch --index-url https://download.pytorch.org/whl/cpu`), reducing Python dependency download size from ~2.5GB (CUDA wheels) to ~180MB (CPU wheel) and fixing long build timeouts
 - TypeScript compilation error in `agent-service` build stage — defined a strict `LLMResponse` interface containing the dynamic `rateLimited` and `fallbackModel` fields so the `tsc` compiler successfully verifies the build output
 - Session switch triggering duplicate `/messages` + `/artifacts` API calls (useEffect dependency bug)
 - Ingest parser failing to parse transcripts without explicit `Speaker (HH:MM:SS):` prefix — regex upgraded to match both formats
