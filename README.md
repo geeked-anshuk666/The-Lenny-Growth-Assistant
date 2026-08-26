@@ -48,6 +48,27 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser!
 
 ---
 
+## 🛠️ Tech Stack Overview
+
+| Category | Component / Library / Model | Description |
+|---|---|---|
+| **Frontend Framework** | React 18, Vite, TypeScript | SPA client UI with fast HMR build setup |
+| **Frontend Styling & UI** | Tailwind CSS, Lucide Icons, clsx, tailwind-merge | Modern dark-mode UI with icon set and class merging utilities |
+| **Frontend Markdown / Renderer** | `react-markdown`, `remark-gfm` | HTML-sanitized Markdown renderer |
+| **Backend Framework (Python)** | FastAPI 0.111.0, Uvicorn | Async REST API backend orchestrating RAG and session workflows |
+| **ORM & Database Client** | SQLAlchemy 2.0 (Async), asyncpg, Pydantic v2 | Asynchronous ORM, Postgres driver, and strict request/response data validation |
+| **Agent Runtime (Node.js)** | Node.js 22, Express, TypeScript | Internal agent microservice for multi-provider LLM calls & tool extraction |
+| **Agent Core & Multi-Provider** | `@earendil-works/pi-ai`, `@earendil-works/pi-agent-core` | Pi Agent framework for provider rotation, prompt formatting, and tool execution |
+| **Database (Relational & State)** | NeonDB (Managed Serverless Postgres) | Persistence for `sessions`, `messages`, and generated `artifacts` |
+| **Vector Database** | NeonDB `pgvector` Extension (384 dimensions) | Native Postgres vector storage for similarity search over transcript chunks |
+| **Embedding Model (Local)** | `sentence-transformers/all-MiniLM-L6-v2` | CPU-optimized local embeddings (~80MB), zero API rate limits |
+| **Cloud LLM Model 1 (Google)** | `gemini-2.0-flash-lite` | High-speed primary cloud LLM provider via Google AI Studio API |
+| **Cloud LLM Model 2 (Groq)** | `openai/gpt-oss-120b` | High-throughput open model running on Groq LPU inference engine |
+| **Local LLM Model (Ollama)** | `qwen2.5:3b` | Offline local LLM running via Ollama runtime engine |
+| **Containerization & Web Server** | Docker, Docker Compose, Nginx 1.27 Alpine | Multi-stage container builds and Nginx static SPA web server |
+
+---
+
 ## Why this stack
 
 | Choice | Reason |
