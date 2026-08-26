@@ -33,8 +33,3 @@ yarn-error.log*
 .idea/
 .DS_Store
 Thumbs.db
-
-# Internal / Private Docs & Codex
-.private_docs/
-.codex/
-scratch/
