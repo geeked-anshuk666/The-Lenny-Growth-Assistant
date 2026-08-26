@@ -4,7 +4,7 @@ title: Making Meta | Andrew ‘Boz’ Bosworth (CTO)
 youtube_url: https://www.youtube.com/watch?v=_XqDB2Upr3s
 video_id: _XqDB2Upr3s
 publish_date: 2024-03-03
-description: 'Andrew Bosworth—or Boz, as most people know him—is the chief technology
+description: 'Andrew Bosworth-or Boz, as most people know him-is the chief technology
   officer at Meta and head of Reality Labs, the company’s augmented reality/virtual
   reality (AR/VR) organization,...
 

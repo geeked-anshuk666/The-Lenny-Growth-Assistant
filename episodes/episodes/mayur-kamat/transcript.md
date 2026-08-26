@@ -5,8 +5,8 @@ title: Unconventional product lessons from Binance, N26, Google, more | Mayur Ka
 youtube_url: https://www.youtube.com/watch?v=UVyfuSBwbNA
 video_id: UVyfuSBwbNA
 publish_date: 2025-05-22
-description: 'Mayur Kamat is the chief product officer at N26—a $9 billion neobank
-  serving over 7 million customers in 25 countries—where he leads product, design,
+description: 'Mayur Kamat is the chief product officer at N26-a $9 billion neobank
+  serving over 7 million customers in 25 countries-where he leads product, design,
   data, and research. Prior to N26, Mayur...
 
   '

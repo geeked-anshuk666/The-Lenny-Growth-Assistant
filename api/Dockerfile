@@ -1,4 +1,4 @@
-# Stage 1: Builder — install all deps + pre-download the sentence-transformers model
+# Stage 1: Builder - install all deps + pre-download the sentence-transformers model
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 
-# Stage 2: Runner — slim image with only what's needed to run
+# Stage 2: Runner - slim image with only what's needed to run
 FROM python:3.11-slim AS runner
 
 WORKDIR /app

@@ -49,7 +49,7 @@ async function generateLLMResponse(
 
     if (activeProvider === 'gemini') {
         apiKey = process.env.GEMINI_API_KEY || '';
-        modelName = modelOverride || process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+        modelName = modelOverride || process.env.GEMINI_MODEL || 'gemini-flash-lite-latest';
     } else if (activeProvider === 'groq') {
         apiKey = process.env.GROQ_API_KEY || '';
         modelName = modelOverride || process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
@@ -256,6 +256,7 @@ Follow these rules:
 4. One Throughline: Organize around a single proven structure (e.g. 3 lessons, 4 mistakes, 5 steps).
 5. Specific Takeaway: End with a clear, concrete call to action or memorable final thought under a dedicated closing section.
 6. Citation: Cite claims with the specific guest name and YouTube citation badge in brackets (e.g., "[Brian Chesky (00:04:12)]").
+7. Output Format: Wrap the entire essay inside a single \`\`\`markdown ... \`\`\` code block. Do not place any conversational remarks, introductory pleasantries, or conclusion summaries inside the code block.
 
 Grounded Context to use:
 ${context}`;
@@ -263,9 +264,10 @@ ${context}`;
             systemPrompt = `You are the Lenny Growth Assistant. You answer questions about product growth, management, and strategy using ONLY the provided podcast transcript context.
 When replying:
 - Ground all facts strictly in the provided context.
+- Prioritize the information in the current Grounded Context over any previous assistant responses in conversation history.
 - Cite the source episode title and speaker name with clickable timestamps whenever referencing a claim (e.g. "According to Brian Chesky, you need to build something that 100 people love (Brian Chesky, 00:05:12)").
 - Keep responses clean, concise, and structured.
-- If the context doesn't contain the answer, politely decline to answer.
+- If the Grounded Context contains relevant quotes or details, explain them fully. Only decline if the context is completely empty or off-topic.
 
 Grounded Context:
 ${context}`;

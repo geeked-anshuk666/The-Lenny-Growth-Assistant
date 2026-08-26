@@ -7,7 +7,7 @@ publish_date: 2023-01-17
 description: 'From episode: (https://youtu.be/bCel0X2Ta7U) How to fire people with
   grace, work through fear, and nurture innovation | Matt Mochary (CEO coach)
 
-  —
+  -
 
   Matt Mochary, CEO of Mochary Method, is...
 

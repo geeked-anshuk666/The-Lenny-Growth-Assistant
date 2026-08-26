@@ -1,4 +1,4 @@
-# architecture.md — The Lenny Growth Assistant
+# architecture.md - The Lenny Growth Assistant
 
 ## 1. System diagram
 
@@ -33,10 +33,10 @@ flowchart LR
 - **Agent service (Node.js, internal only):** thin HTTP wrapper around
   `pi-agent-core`. Receives `{messages, context, provider, model_override}`,
   returns `{text, provider_used, model_used, rate_limited, fallback_model,
-  artifact}`. Provider selection via `pi-ai`'s unified interface — Gemini,
+  artifact}`. Provider selection via `pi-ai`'s unified interface - Gemini,
   Groq, or Ollama. Also exposes `GET /provider/models?provider=X` which
   fetches live model lists from each provider's API.
-  **Never exposed to the public internet** — only reachable from the
+  **Never exposed to the public internet** - only reachable from the
   FastAPI container on the internal Docker network.
 - **Retrieval module (in FastAPI):** chunking/embedding at ingestion time
   (offline script), cosine similarity search at query time via pgvector,
@@ -45,8 +45,7 @@ flowchart LR
 - **Artifact extractor (in FastAPI → agent service):** parses
   ` ```html ` / ` ```markdown ` fences from LLM output, persists as
   `ArtifactModel`, returns to frontend for side-pane rendering.
-- **Persistence:** NeonDB Postgres — `sessions`, `messages`, `artifacts`,
-  `transcript_chunks` (384-dim pgvector column).
+- **Persistence:** NeonDB Postgres - `sessions`, `messages` (contains a `citations` JSONB column representing matched sources), `artifacts`, and `transcript_chunks` (384-dim pgvector column).
 
 ## 3. Ingestion / retrieval flow
 
@@ -56,34 +55,32 @@ flowchart LR
 2. Transcript body has per-speaker-turn timestamps
    (`Speaker Name (HH:MM:SS):`). Chunk by grouping consecutive turns into
    ~500–800 token windows, preserving the **first timestamp in each
-   chunk** so a citation can link to `youtube_url&t=<seconds>` — an exact
+   chunk** so a citation can link to `youtube_url&t=<seconds>` - an exact
    moment, not just the episode.
 3. Embed each chunk locally via `sentence-transformers/all-MiniLM-L6-v2`,
    store in `transcript_chunks` with `source_title`, `source_url`
    (timestamped), `guest`, `keywords` (reused from frontmatter).
-4. Query time: embed the user question with the same model, top-k
-   similarity search in pgvector, return chunks + metadata to the agent
-   service as context.
+4. Query time: embed the user question with the same model, perform top-8 similarity search in pgvector (tuned from top-4 to improve recall on specific quotes and prevent related chunks from pushing target content out of scope), return chunks + metadata to the agent service as context.
 5. Agent is instructed (system prompt) to answer only from provided
    context and cite `source_title` + timestamped `source_url` per claim.
    If top-k similarity is below a threshold, respond that the corpus
-   doesn't cover the question — never fabricate.
+   doesn't cover the question - never fabricate.
 6. Re-ingestion = re-running `python ingest.py` manually. No live
    refresh pipeline.
 
 ## 4. Agent routing (Pi-based, multi-provider)
 
-- `pi-ai` natively supports Gemini, Groq, and Ollama — no custom
+- `pi-ai` natively supports Gemini, Groq, and Ollama - no custom
   provider-adapter code needed, no translation proxy.
 - Config value (`LLM_PROVIDER=gemini|groq|ollama`) selects the active
   provider; `LLM_PROVIDER_FALLBACK` is used automatically if the primary
   fails (logged as a structured warning).
 - Per-request `model_override` lets the UI send a specific model ID chosen
-  by the user — the agent service respects this for the primary provider
+  by the user - the agent service respects this for the primary provider
   and falls back to provider defaults on rotation.
 - Ship 30/30 essay generation is a distinct **skill**: its own system
   prompt (built from the real Ship 30/30 framework) plus output validators
-  for word count (~1,250) and heading/hook presence — not folded into the
+  for word count (~1,250) and heading/hook presence - not folded into the
   general chat prompt.
 - Artifact generation: LLM wraps output in ` ```html ` or ` ```markdown `
   fences; the agent service detects this regex and returns the extracted
@@ -96,16 +93,16 @@ flowchart LR
   API → returns `{models: [{id, label}]}` → UI populates model dropdown.
 - If the primary provider is unreachable/errors → agent service falls
   back per `LLM_PROVIDER_FALLBACK`, logs a structured warning, and the
-  API response includes `rate_limited: true`, `fallback_model` — UI shows
+  API response includes `rate_limited: true`, `fallback_model` - UI shows
   amber banner and updates selected model state.
 - UI provider badge reads the *actual* serving provider off each
-  response — not the configured default — so a fallback mid-demo is shown
+  response - not the configured default - so a fallback mid-demo is shown
   honestly, not hidden.
 
 ## 6. Security (artifact rendering)
 
 - Generated HTML renders inside a **sandboxed iframe**
-  (`sandbox="allow-same-origin"` only — no `allow-scripts`), so no
+  (`sandbox="allow-same-origin"` only - no `allow-scripts`), so no
   JavaScript from generated content executes.
 - Markdown renders via `react-markdown` with `remarkGfm`. HTML pass-through
   is not enabled, preventing script injection through Markdown.

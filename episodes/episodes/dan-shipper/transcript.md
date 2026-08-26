@@ -7,7 +7,7 @@ video_id: crMrVozp_h8
 publish_date: 2025-07-17
 description: 'Dan Shipper is the co-founder and CEO of Every. With just 15 people,
   Every publishes a daily AI newsletter, ships multiple AI products, and operates
-  a million-dollar-a-year consulting arm—all...
+  a million-dollar-a-year consulting arm-all...
 
   '
 duration_seconds: 5697.0

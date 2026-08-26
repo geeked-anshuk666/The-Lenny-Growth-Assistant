@@ -4,7 +4,7 @@ title: Failure
 youtube_url: https://www.youtube.com/watch?v=9euy9gC48lc
 video_id: 9euy9gC48lc
 publish_date: 2023-12-13
-description: 'In this special compilation episode, we delve into failure—an overlooked
+description: 'In this special compilation episode, we delve into failure-an overlooked
   source of wisdom. From freezing onstage in front of thousands of people, to coworkers
   staging an intervention, to...
 

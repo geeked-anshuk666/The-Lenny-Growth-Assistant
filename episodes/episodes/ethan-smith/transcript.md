@@ -5,7 +5,7 @@ title: 'The ultimate guide to AEO: How to get ChatGPT to recommend your product 
 youtube_url: https://www.youtube.com/watch?v=iT7kq-R3Gjc
 video_id: iT7kq-R3Gjc
 publish_date: 2025-09-14
-description: 'Ethan Smith is the CEO of Graphite—the leading SEO growth agency—and
+description: 'Ethan Smith is the CEO of Graphite-the leading SEO growth agency-and
   my go-to expert on SEO. After 18 years of mastering traditional SEO, Ethan has been
   at the forefront of what is called...
 

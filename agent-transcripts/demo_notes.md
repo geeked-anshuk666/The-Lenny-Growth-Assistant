@@ -1,4 +1,4 @@
-# Demo Notes — The Lenny Growth Assistant
+# Demo Notes - The Lenny Growth Assistant
 
 Evaluator reference for running a walkthrough demo.
 
@@ -12,7 +12,7 @@ Expected: Answer with citation badge `(Brian Chesky, 00:05:12)` linking to exact
 ### 2. Hallucination guardrail (30s)
 Ask: `What did Sam Altman say about quantum computing hardware architectures on Lenny's podcast?`
 
-Expected: Assistant explicitly declines — "I cannot find information about this in the provided transcripts." No fabrication.
+Expected: Assistant explicitly declines - "I cannot find information about this in the provided transcripts." No fabrication.
 
 ### 3. Cross-episode comparison (1 min)
 Ask: `Compare Brian Chesky's view on founder involvement with Tobi Lütke's view on first-principles leadership.`
@@ -31,9 +31,9 @@ Expected: New answer shows "Served by groq" label. No page reload required.
 
 ## Known behaviours (not bugs)
 
-- Groq free tier has TPM limits — on repeated rapid queries the amber rate-limit banner may appear. This is correct behaviour (auto-switches model).
+- Groq free tier has TPM limits - on repeated rapid queries the amber rate-limit banner may appear. This is correct behaviour (auto-switches model).
 - Local Ollama responses are slower (~5s p50 on modest hardware). For demos, Gemini or Groq recommended.
-- Ollama must be running as a host process (`ollama serve`) before starting the stack — it cannot run inside a container reliably without GPU passthrough.
+- Ollama must be running as a host process (`ollama serve`) before starting the stack - it cannot run inside a container reliably without GPU passthrough.
 
 ## Stress test results (adversarial prompts)
 

@@ -1,6 +1,6 @@
 ---
 guest: Jason M Lemkin
-title: We replaced our sales team with 20 AI agents—here’s what happened next | Jason
+title: We replaced our sales team with 20 AI agents-here’s what happened next | Jason
   Lemkin (SaaStr)
 youtube_url: https://www.youtube.com/watch?v=I-R1bc1rlFs
 video_id: I-R1bc1rlFs
@@ -32,7 +32,7 @@ keywords:
 - culture
 ---
 
-# We replaced our sales team with 20 AI agents—here’s what happened next | Jason Lemkin (SaaStr)
+# We replaced our sales team with 20 AI agents-here’s what happened next | Jason Lemkin (SaaStr)
 
 ## Transcript
 

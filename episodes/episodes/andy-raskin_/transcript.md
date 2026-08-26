@@ -5,7 +5,7 @@ youtube_url: https://www.youtube.com/watch?v=dkVJnaxDlXE
 video_id: dkVJnaxDlXE
 publish_date: 2023-05-28
 description: Andy Raskin helps CEOs align their leadership teams around a strategic
-  narrative—a single story that powers success in sales, marketing, product, fundraising,
+  narrative-a single story that powers success in sales, marketing, product, fundraising,
   and recruiting. His clients...
 duration_seconds: 3769.0
 duration: '1:02:49'

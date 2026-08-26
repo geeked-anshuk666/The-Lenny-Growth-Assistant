@@ -5,7 +5,7 @@ title: 'Velocity over everything: How Ramp became the fastest-growing SaaS start
 youtube_url: https://www.youtube.com/watch?v=aNJDZ_RzTVk
 video_id: aNJDZ_RzTVk
 publish_date: 2023-08-06
-description: 'Geoff Charles is VP of Product at Ramp—the fastest-growing SaaS startup
+description: 'Geoff Charles is VP of Product at Ramp-the fastest-growing SaaS startup
   of all time, Fast Company’s #1 Most Innovative Company in North America, and a company
   I believe we should all study...
 

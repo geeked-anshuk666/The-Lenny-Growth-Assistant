@@ -7,7 +7,7 @@ video_id: cX4cL6B-_aU
 publish_date: 2025-08-17
 description: 'Brian Balfour is the founder of Reforge, the former VP of Growth at
   HubSpot, and a student (and teacher) of product growth. Brian has studied every
-  major platform shift—from Facebook to Apple...
+  major platform shift-from Facebook to Apple...
 
   '
 duration_seconds: 5352.0

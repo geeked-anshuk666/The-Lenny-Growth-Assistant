@@ -1,4 +1,4 @@
-# Stage 1: Builder — compiles TypeScript and installs ALL deps (including devDeps)
+# Stage 1: Builder - compiles TypeScript and installs ALL deps (including devDeps)
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -12,13 +12,13 @@ COPY . .
 RUN npm run build
 
 
-# Stage 2: Runner — only compiled JS + production node_modules
+# Stage 2: Runner - only compiled JS + production node_modules
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 COPY package*.json ./
-# Install ONLY production dependencies — excludes ts-node-dev, typescript, @types/*
+# Install ONLY production dependencies - excludes ts-node-dev, typescript, @types/*
 RUN npm ci --omit=dev
 
 # Copy compiled output from builder

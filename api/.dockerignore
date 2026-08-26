@@ -1,4 +1,4 @@
-# Python artifacts — never ship these into the image
+# Python artifacts - never ship these into the image
 __pycache__/
 *.pyc
 *.pyo
@@ -7,7 +7,7 @@ __pycache__/
 dist/
 build/
 
-# Virtual environment — builder creates its own venv from requirements.txt
+# Virtual environment - builder creates its own venv from requirements.txt
 venv/
 .venv/
 env/
@@ -16,7 +16,7 @@ env/
 .env
 .env.*
 
-# Test infrastructure — not needed in the running container
+# Test infrastructure - not needed in the running container
 tests/
 .pytest_cache/
 .coverage

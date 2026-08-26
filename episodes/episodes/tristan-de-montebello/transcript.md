@@ -1,6 +1,6 @@
 ---
 guest: Tristan de Montebello
-title: Why most public speaking advice is wrong—and how to finally overcome anxiety
+title: Why most public speaking advice is wrong-and how to finally overcome anxiety
   | Tristan de Montebello
 youtube_url: https://www.youtube.com/watch?v=BQM3Yq93nVc
 video_id: BQM3Yq93nVc
@@ -32,7 +32,7 @@ keywords:
 - career
 ---
 
-# Why most public speaking advice is wrong—and how to finally overcome anxiety | Tristan de Montebello
+# Why most public speaking advice is wrong-and how to finally overcome anxiety | Tristan de Montebello
 
 ## Transcript
 

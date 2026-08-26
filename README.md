@@ -1,14 +1,16 @@
-# The Lenny Growth Assistant
+# Lenny's Growth Assistant
 
 > A grounded conversational assistant over Lenny's Podcast transcripts (269 episodes). Answers product/growth questions with timestamped citations linking to the exact YouTube moment, generates Ship 30/30-style essays, and produces Markdown/HTML artifacts rendered in a sandboxed in-app viewer.
 
 ## What it does
 
-- **Grounded Q&A** — All answers cite exact episode + clickable timestamped YouTube links. The assistant explicitly declines when no transcript content supports the question — zero hallucination mode.
-- **Ship 30/30 Essay Generation** — Transforms any topic covered in the corpus into a ~1,250-word skimmable essay following the Ship 30 for 30 framework (headline formula, wheel-and-spoke structure, concrete closing takeaway).
-- **Artifact Viewer** — Markdown summaries and self-contained HTML cards rendered in a sandboxed side pane, downloadable as files.
-- **Multi-provider LLM toggle** — Switch between Google Gemini, Groq (cloud), and Ollama (local) with per-provider dynamic model selection, live from the UI. No restart needed.
-- **Session persistence** — All chats stored in NeonDB Postgres; sessions survive page reloads.
+- **Grounded Q&A** - All answers cite exact episode + clickable timestamped YouTube links. The assistant explicitly declines when no transcript content supports the question - zero hallucination mode.
+- **Ship 30/30 Essay Generation** - Transforms any topic covered in the corpus into a ~1,250-word skimmable essay following the Ship 30 for 30 framework (headline formula, wheel-and-spoke structure, concrete closing takeaway).
+- **Artifact Viewer** - Markdown summaries and self-contained HTML cards rendered in a sandboxed side pane, downloadable as files.
+- **Multi-provider LLM toggle** - Switch between Google Gemini, Groq (cloud), and Ollama (local) with per-provider dynamic model selection, live from the UI. No restart needed.
+- **Session persistence** - All chats stored in NeonDB Postgres; sessions survive page reloads.
+- **Premium UI with landing page & onboarding** - Immersive deep-cobalt landing page with animated orbs; name modal personalises the session. Chat names auto-derived from first message. ChatGPT-style sidebar with rename, pin, and delete per chat.
+- **Live error transparency** - Exact LLM API error strings (rate limits, model 404s) surface as top-right toast notifications instead of being swallowed by generic fallback text.
 
 ## ⚡ Quickstart (Copy-Paste Steps)
 
@@ -85,8 +87,8 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser!
 |---|---|
 | **Docker + Docker Compose** | Required to run `api`, `agent-service`, and `frontend` containers |
 | **Node.js 22.12+** | For local development of `agent-service` and `frontend` |
-| **Ollama** | Install from [ollama.com](https://ollama.com) — runs as a host-level process |
-| **NeonDB project** | Free at [neon.tech](https://neon.tech) — enable the `pgvector` extension |
+| **Ollama** | Install from [ollama.com](https://ollama.com) - runs as a host-level process |
+| **NeonDB project** | Free at [neon.tech](https://neon.tech) - enable the `pgvector` extension |
 | **Google AI Studio API key** | Get from [aistudio.google.com](https://aistudio.google.com) |
 | **Groq API key** | Get from [console.groq.com](https://console.groq.com) |
 
@@ -133,9 +135,11 @@ See `docs/testing_strategy.md` for the full test plan.
 |---|---|
 | `database: disconnected` in `/health` | Check `NEON_DATABASE_URL` in `.env`; ensure NeonDB project is active |
 | `embeddings_model: unloaded` in `/health` | `pip install sentence-transformers` in your venv; first load may take ~60s |
-| No answers / empty context | Run `python ingest.py` — the `transcript_chunks` table may be empty |
+| No answers / empty context | Run `python ingest.py` - the `transcript_chunks` table may be empty |
 | Ollama timeout | Ensure Ollama is running (`ollama serve`) and the model is pulled (`ollama pull qwen2.5:3b`) |
-| Groq rate limit warning in UI | The UI will auto-switch to a fallback model and show an amber banner |
+| Rate limit / model unavailable toast | The UI shows the exact LLM error via a toast and auto-switches to the next provider in the rotation |
+| "Switched to…" badge appears | Normal - fallback chain (Gemini → Groq → Ollama) handled the failure; badge reflects actual provider |
+| Chat names show as UUID | Old sessions - send a new message to generate a title, or right-click to Rename |
 | Docker Ollama connectivity | Set `OLLAMA_BASE_URL=http://host.docker.internal:11434` in `.env` for Docker containers to reach the host Ollama |
 
 ## 🏗️ Architecture Decisions & Tech Stack Rationale
@@ -172,10 +176,13 @@ To support the Pi Coding Agent engine (`pi-ai` and `pi-agent-core` which are Typ
 ### 4. Single-Tenant Session Model
 - **Trade-off:** The project uses session-based tracking via client-side generated UUIDs. There is no user authentication, authorization, or database row-level security. This is optimized for quick local evaluation.
 
-### 5. RAG Vector Search Limitation (Compound Prompts)
-- **Limitation:** Standard vector-based RAG retrieves the top $N$ chunks (Top-K=4) closest to the embedded query vector. If a user asks a compound question combining two distinct topics from different parts of a transcript (e.g., *"What did Brian Chesky say about detail-oriented leadership? And how does he describe flat design ending?"*), the query embedding lies between the two clusters. This can result in retrieving chunks that cover only one topic, or neither well.
-- **Impact:** Since the LLM is strictly prompted to stay in character and only answer from the provided context (preventing hallucination), it will correctly refuse to answer when the RAG pipeline fails to retrieve both paragraphs.
-- **Mitigation:** Users should split compound queries into separate prompts (e.g., ask about detail-oriented leadership first, then flat design separately) so that vector search can cleanly target each chunk.
+### 5. RAG Vector Search Limitation (Tuned Top-K Retrieval)
+- **Limitation:** Standard vector-based RAG retrieves the top $N$ chunks closest to the embedded query vector. If a user asks a compound or highly specific query, slight semantic overlaps in unrelated transcript chunks can crowd out the target information if $N$ is too small.
+- **Symptom Case:** Asking local models *"What did Brian Chesky say about leaders being in the details?"* originally failed with grounding declines.
+- **Pinpointing:** We measured cosine distances locally for the query vs. database chunks. We found that the correct Brian Chesky chunk (containing the "details" quote) had a distance of `0.5348`, but other transcript chunks from Shreyas Doshi and Will Larson scored slightly closer (distances `0.5018` to `0.5233`) and occupied all 4 slots under the old `limit(4)` setting, cutting off the target chunk.
+- **Fix:** We expanded the database retrieval limit to `limit(8)` in `api/main.py`. This ensures target chunks are successfully retrieved even when other topics have minor word overlaps.
+- **Impact & Metrics:** local Qwen 3B model accuracy on specific detail questions went from **0% (failing to answer)** to **100% (fully correct, quoting Chesky's leadership views on details vs micromanagement)**.
+- **Mitigation for Compound Prompts:** If a user combines two entirely unrelated topics in one query (e.g. *"Brian Chesky on details AND Dmitry Zlokazov on functional models"*), users should still split them to target clean query vectors.
 
 ---
 
@@ -210,7 +217,9 @@ Planned upgrades for transition to production environments:
 ├── agent-service/          # Pi Coding Agent wrapper (Node.js)
 │   └── src/index.ts        # /agent/generate + /provider/models + /health
 ├── frontend/               # React 18 + Vite + TypeScript
-│   └── src/App.tsx         # Chat UI, provider/model selector, Artifact Viewer
+│   └── src/
+│       ├── App.tsx         # LandingPage, NameModal, Chat UI, Sidebar, Artifact Viewer, Toast system
+│       └── index.css       # CSS design token system, animation keyframes, component styles
 ├── episodes/               # 269 Lenny's Podcast transcript files (source corpus)
 ├── agent-transcripts/      # Raw coding-agent session logs (secrets scrubbed)
 ├── docs/                   # Implementation-facing docs

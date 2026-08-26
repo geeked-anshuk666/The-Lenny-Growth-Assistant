@@ -1,81 +1,100 @@
-# design.md — The Lenny Growth Assistant
+# design.md - Lenny's Growth Assistant
 
 ## Principles
 
-- **Clarity over polish-for-its-own-sake.** Graded on functionality and
-  clear states, not visual flair. A clean two/three-pane layout (Claude/
-  ChatGPT-style) is sufficient — but must avoid generic "AI slop" defaults.
-- **Groundedness must be visible.** Citations (episode + clickable
-  timestamp) are a first-class UI element, not a footnote.
-- **State honesty.** Loading, empty, error, and "no answer in corpus"
-  states must each look visually distinct and be handled — no silent
-  failures.
+- **Impeccable over generic.** The UI should look premium and considered - no visual "AI slop". Strong hierarchy, curated color palette, purposeful animation.
+- **Groundedness must be visible.** Citations (episode + clickable timestamp) are a first-class UI element, not a footnote. The assistant must visibly attribute every claim.
+- **State honesty.** Loading, empty, error, and "no answer in corpus" states must each look visually distinct and be handled - no silent failures.
+- **Identity-first onboarding.** The app learns the user's name before the first message so the experience feels personal from the start.
 
-## Information architecture
+## Information Architecture
 
-- **Left pane:** session list (new chat button, past sessions with IDs)
-- **Center:** chat thread — citations rendered inline as clickable
-  episode+timestamp badges, provider label shown on each assistant message
-- **Right pane (on demand):** Artifact Viewer — split view when active,
-  with toggle between Preview and Code views, copy, and download buttons
-- **Header:** active provider selector (Gemini / Groq / Local) + dynamic
-  per-provider model dropdown, fetched live from `/provider/models`
+- **Landing page:** Full-screen hero (gradient cobalt + animated ambient orbs) with CTA → name modal → enters chat app.
+- **Left sidebar:** App title + user identity footer; session list with `+` new chat button; pinned section at top; right-click / `⋯` context menu per session.
+- **Center:** Chat thread - citations rendered inline as clickable episode+timestamp badges; provider/model dropdowns in header; LG avatar on AI messages, user initial on user messages; Served-by badge on each AI reply.
+- **Right pane (on demand):** Artifact Viewer - split view when active, toggle between Preview and Code views, copy, and download buttons.
 
-## Key interaction states
+## Key Interaction States
 
 | State | Behavior |
 |---|---|
-| Loading response | Three-dot bounce animation; provider name visible in header |
-| Retrieval empty | Assistant message explicitly states no transcript coverage — no hallucination |
-| Provider unavailable | Inline error banner; if fallback fires, UI shows the provider that actually served the response |
-| Rate limit hit | Amber warning banner auto-appears with the fallback model name; auto-dismissed after 6 seconds |
-| Artifact generated | Right pane opens automatically; chat shows the full essay in chat + Artifact Viewer for preview/download |
-| Ship 30/30 essay | Rendered in Artifact Viewer (long-form); downloadable as `.md` file |
-| Citation click | Opens `youtube_url` at the exact timestamp in a new tab |
+| First visit | Landing page → "Let's Start" CTA → Name modal → Chat app |
+| Returning visit | Always shows the landing page on page reload. Clicking "Let's Start" checks localStorage; if the name exists, it transitions directly to the chat app (skipping the name input modal) |
+| Loading response | Three-dot bounce animation; provider/model visible in header |
+| Retrieval empty | Assistant message explicitly states no transcript coverage - no hallucination |
+| Provider unavailable | Toast notification (top-right, error variant) with exact error from LLM API |
+| Rate limit hit | Amber warn toast shows fallback model name; model dropdown updates to actual provider |
+| Artifact generated | Right pane opens automatically |
+| Ship 30/30 essay | Rendered in Artifact Viewer; downloadable as `.md` file |
+| Citations display & click | Renders as structured interactive pills under each assistant bubble showing the guest name and timestamp (e.g. "t=43:57"). Also appends a Markdown list at the bottom. Clicking a pill opens the exact YouTube timestamp in a new tab. |
 | Model switching | Provider dropdown triggers live model list fetch with loading spinner |
+| Rename chat | Inline edit in sidebar; Enter to confirm, Escape to cancel |
+| Delete chat | Context menu → API call → removed from sidebar |
+| Pin chat | Context menu → floats to "Pinned" section at top of sidebar |
+| Clear all chats | Trashcan icon in sidebar header → confirmation dialog → `DELETE /sessions` API call → clears all state |
 
-## Implemented UI components
+## Implemented UI Components
 
 | Component | Implementation |
 |---|---|
-| Session sidebar | Left pane with `+` new chat button, session list with chevron indicator |
-| Provider selector | `<select>` dropdown — `Google Gemini`, `Groq Cloud`, `Local (Ollama)` |
-| Model selector | Dynamic `<select>` fetched from `/provider/models`, spins while loading |
-| Message thread | User messages right-aligned (primary color), AI left-aligned (dark panel) |
+| `LandingPage` | Full-screen hero with animated CSS orbs, floating quote cards, stat counters |
+| `NameModal` | Frosted-glass card (glassmorphism), scale+fade-in animation, localStorage persistence |
+| `LGAvatar` | 32px gradient indigo-to-blue circle with "LG" text mark - replaces old "AI" text bubble |
+| `UserAvatar` | Gradient purple-pink circle with user's first initial - replaces old "U" text bubble |
+| Session sidebar | Left pane with Clear All (trashcan) and New Chat (`+`) buttons; human-readable titles |
+| Session context menu | Right-click / `⋯` → Rename / Pin / Delete actions |
+| Inline rename | Input replaces session name text; confirmed with Enter/blur |
+| Sidebar user footer | User initial avatar + name + pulsing green status dot |
+| Provider selector | Pill-shaped `<select>` - "Google Gemini", "Groq Cloud", "Local (Ollama)" |
+| Model selector | Dynamic `<select>` fetched from `/provider/models`; spinner while loading |
+| Message thread | User messages right-aligned (indigo gradient), AI left-aligned (dark panel) |
 | Typing indicator | Three bouncing dots while LLM call is in-flight |
-| Rate-limit banner | Amber `AlertTriangle` banner, auto-dismiss 6s, manual close button |
+| `ServedByBadge` | Below AI message: green dot + "Served by X" / amber "⚡ Switched to X" |
+| Toast system | Four-variant (error/warn/success/info) top-right slide-in toasts, 8s auto-dismiss |
+| Suggestion chips | Empty-state prompt suggestion buttons to start a conversation |
 | Artifact Viewer | Right pane, `<iframe sandbox="allow-same-origin">` for HTML, `<ReactMarkdown>` for MD |
-| Artifact controls | Preview/Code toggle, Copy (`lucide-react`), Download, Close |
-| Error banner | Red `AlertCircle` banner for network/server errors |
-| Provider badge | Per-message `<span>` showing which provider served that response |
+| Artifact controls | Preview/Code toggle, Copy, Download, Close |
 
-## Responsive behavior
+## Design System
 
-- Desktop: two/three-pane layout as above.
-- Narrow viewport: Artifact Viewer becomes a full-screen overlay toggle
-  instead of a persistent side pane.
+| Token | Value | Usage |
+|---|---|---|
+| `--bg-void` | `#040814` | Page background |
+| `--bg-surface` | `#0C1120` | Sidebar, header |
+| `--bg-panel` | `#101828` | Chat pane |
+| `--bg-card` | `#151f30` | Message bubbles, inputs |
+| `--brand` | `#6366f1` | Accent, active states, CTAs |
+| `--text-primary` | `#f1f5f9` | Body text |
+| `--text-secondary` | `#94a3b8` | Sidebar session names, labels |
+| `--text-muted` | `#475569` | Timestamps, badges |
+| `--success` | `#34d399` | Status dot, served-by badge |
+| `--warn` | `#fbbf24` | Fallback toast, "Switched to" badge |
+| `--danger` | `#f87171` | Error toast, delete ctx item |
+
+**Typography:** `Inter` for body/labels, `Outfit` for headings and branding (both from Google Fonts)
+
+**Icons:** `lucide-react` library throughout
+
+**Animations:**
+- Ambient orb: CSS `@keyframes orb-drift` - translate + scale 8s ease alternate
+- Modal: `@keyframes modal-slide-in` - scale(0.9) + translateY(16px) → identity, 0.3s spring cubic
+- Toast: `@keyframes toast-in` - translateX(40px) → 0, 0.3s spring cubic
+- Floating cards: `@keyframes card-float` - vertical oscillation 5–7s
+- Typing dots: `@keyframes bounce` - translateY, staggered 150ms delays
+- Status dot: `@keyframes pulse-dot` - box-shadow pulse 2s
 
 ## Accessibility
 
 - All interactive elements have `aria-label` attributes.
-- Minimum touch target size: 44×44px (applied to all icon buttons).
-- `id` attributes on all form inputs (`message-input`, `provider-select`,
-  `model-select`) for label association and browser testing.
-- Keyboard-navigable session list, chat input, and artifact controls.
-- Sufficient color contrast (dark backgrounds, white/light-gray text).
-- Semantic HTML: `<aside>`, `<main>`, `<header>`, `<form>`.
-
-## Design system
-
-- **Color palette:** dark theme with `#080B11` base, `#0F1420` sidebar,
-  primary accent from CSS variable `--color-primary`.
-- **Typography:** system font stack via Tailwind defaults.
-- **Icons:** `lucide-react` icon library throughout.
-- **Animations:** CSS bounce for typing indicator, Tailwind transitions
-  for hover states, `animate-pulse` for the live-status indicator.
+- Minimum touch target size: 44×44px (applied to all icon buttons - `IconBtn` wrapper enforces 34×34px + padding).
+- `id` attributes on all form inputs (`message-input`, `provider-select`, `model-select`, `new-chat-btn`, `send-btn`, `cta-start`, `name-input`, `name-submit`) for browser testing and label association.
+- Keyboard navigation: session list items have `role="button"` + `tabIndex={0}` + `onKeyDown` Enter handler.
+- Semantic HTML: `<aside>`, `<main>` (`id="main-content"`), `<header>`, `<form>`, `<dialog>` (modal `role="dialog" aria-modal="true"`).
 
 ## UI Design Decisions & Trade-offs
 
-- **Rate-Limit Visibility vs. UX Friction:** When a rate limit is encountered on a cloud provider, we opted to automatically fallback and resume the generation instead of blocking the user with a strict blocker modal. To keep this transition honest, an amber notification banner shows the fallback event, and the model selector updates dynamically to the model currently serving the response.
-- **Sandboxed Artifact Rendering over Raw HTML Injection:** Injecting raw model-generated HTML directly into the web DOM poses security (XSS) risks. We made a deliberate trade-off to render HTML inside a sandboxed `<iframe>` with `sandbox="allow-same-origin"` (without `allow-scripts`). This restricts executing nested JavaScript scripts while maintaining correct layout styling.
-- **Persistent Multi-Pane Layout:** Instead of stacking chats and generated documents in a single scrolling thread, the workspace uses a three-column sidebar-chat-artifact design. This allows growth operators to read and copy generated summaries in a dedicated side panel while refining queries in the primary chat history.
+- **Rate-Limit Visibility vs. UX Friction:** When a rate limit is encountered, we automatically fallback and resume generation instead of blocking with a modal. An amber toast shows the fallback event and the model selector updates to the actual provider serving the request.
+- **Sandboxed Artifact Rendering:** HTML artifacts are rendered inside `<iframe sandbox="allow-same-origin">` (no `allow-scripts`) to prevent XSS risks from model-generated code.
+- **Persistent Multi-Pane Layout:** Three-column sidebar-chat-artifact design lets users read generated summaries while refining queries without scrolling to find them.
+- **Frontend-only chat titles:** Chat titles are derived from the first user message and stored in component state (not persisted to DB) to avoid the cost of a separate LLM title-generation call. Explicit rename via `PATCH /sessions/{id}` persists to the `metadata_` JSONB column.
+- **Name modal persistence via localStorage:** The user's name is stored in `localStorage` (not a session cookie or DB row) to keep the project single-tenant and deployment-simple. On refresh, the app reads the stored name and skips the onboarding flow.

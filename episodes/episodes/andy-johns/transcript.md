@@ -5,7 +5,7 @@ youtube_url: https://www.youtube.com/watch?v=_93m4PriHyc
 video_id: _93m4PriHyc
 publish_date: 2023-09-10
 description: 'Andy Johns is a former tech exec and VC who had a successful run at
-  several startups—including Facebook, Twitter, Wealthfront, and Quora—but left it
+  several startups-including Facebook, Twitter, Wealthfront, and Quora-but left it
   all behind a few years ago to take a...
 
   '

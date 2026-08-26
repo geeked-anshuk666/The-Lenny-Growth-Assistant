@@ -1,7 +1,7 @@
-# Node artifacts — builder runs npm ci from package.json directly
+# Node artifacts - builder runs npm ci from package.json directly
 node_modules/
 
-# Built output — builder produces this; runner copies from builder
+# Built output - builder produces this; runner copies from builder
 dist/
 
 # Secrets

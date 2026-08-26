@@ -1,4 +1,4 @@
-# PRD — The Lenny Growth Assistant
+# PRD - The Lenny Growth Assistant
 
 ## 1. Discovery Brief
 
@@ -9,7 +9,7 @@ into shareable written content.
 
 **Job to be done:** "Give me an answer I can trust is actually from Lenny's
 Podcast, let me dig deeper with follow-ups, and let me turn the good stuff
-into a polished essay or artifact — without touching a prompt, a model
+into a polished essay or artifact - without touching a prompt, a model
 config, or a database."
 
 **Pain removed:** manual transcript search; manual reformatting into
@@ -18,7 +18,7 @@ shareable content; not knowing whether an AI answer is actually grounded.
 **Success metric (primary, measurable):** ≥90% of assistant answers include
 at least one verifiable transcript citation (episode + clickable
 timestamp), and the assistant explicitly declines when no transcript
-content supports the question — measured via the manual test plan.
+content supports the question - measured via the manual test plan.
 
 **Secondary (operational):** p50 latency under 6s on local Ollama, under 3s
 on cloud (Gemini/Groq).
@@ -26,7 +26,7 @@ on cloud (Gemini/Groq).
 ## 2. Assumptions (brief was incomplete)
 
 - **Transcript source:** the real repo (`geeked-anshuk666/lennys-podcast-transcripts`,
-  forked from `ChatPRD/lennys-podcast-transcripts`) — 269 episodes, each
+  forked from `ChatPRD/lennys-podcast-transcripts`) - 269 episodes, each
   `episodes/{guest-name}/transcript.md` with YAML frontmatter (`guest`,
   `title`, `youtube_url`, `video_id`, `publish_date`, `duration`,
   `keywords`) and a transcript body with **per-speaker-turn timestamps**
@@ -37,14 +37,14 @@ on cloud (Gemini/Groq).
   the agent layer to use "the Anthropic Claude Agent SDK or Pi Coding
   Agent" (a hard either/or). Both Anthropic and OpenAI require a credit
   card for billing, which is not available to the engineer (India, no
-  card). Google AI Studio (Gemini) and Groq were used instead — both have
+  card). Google AI Studio (Gemini) and Groq were used instead - both have
   genuinely free tiers with no payment method required. This satisfies the
   spirit of "flexible LLM configuration" fully, and the underlying
   provider abstraction (`pi-ai`) makes swapping in Anthropic/OpenAI later
   a one-line config change, not a code change.
 - **Agent framework:** Pi Coding Agent (`pi-ai` + `pi-agent-core`) was
   chosen over the Claude Agent SDK because it is natively multi-provider
-  (Anthropic, OpenAI, Google, Groq, Ollama, and more, out of the box) —
+  (Anthropic, OpenAI, Google, Groq, Ollama, and more, out of the box) -
   the Claude Agent SDK only speaks Anthropic's API format and would need a
   translation proxy to work with free-tier providers, which is unnecessary
   complexity given Pi is an equally valid, explicitly named option in the
@@ -53,11 +53,11 @@ on cloud (Gemini/Groq).
   agent layer runs as a small internal Node.js service; FastAPI remains
   the one public-facing API and calls this service over HTTP internally.
   This is a direct consequence of the brief naming a Python backend
-  (FastAPI) and a TypeScript-only agent framework (Pi) — not
+  (FastAPI) and a TypeScript-only agent framework (Pi) - not
   over-engineering, just the minimum plumbing to satisfy both literally.
 - **Database:** brief says "you may use Supabase or Railway" (optional,
   not mandatory). NeonDB (free-tier serverless Postgres, no card) was used
-  instead — same category of managed Postgres, satisfies the requirement
+  instead - same category of managed Postgres, satisfies the requirement
   identically.
 - **Embeddings:** a local `sentence-transformers` model is used instead of
   a cloud embedding API, so ingestion works fully offline and isn't rate
@@ -86,15 +86,15 @@ on cloud (Gemini/Groq).
   plan
 
 **Out of scope (explicitly, with reason)**
-- Multi-user auth/RBAC — single-tenant demo, not needed to prove the concept
-- Horizontal scaling, caching layers, message queues — this is a graded
+- Multi-user auth/RBAC - single-tenant demo, not needed to prove the concept
+- Horizontal scaling, caching layers, message queues - this is a graded
   take-home demo, not a production system under real traffic
-- Live transcript scraping/refresh — static corpus (already 269 episodes)
+- Live transcript scraping/refresh - static corpus (already 269 episodes)
   is sufficient to demonstrate ingestion → retrieval → citation; refresh =
   re-running the ingestion script manually
-- Fine-tuning any model — prompting + retrieval is sufficient and more
+- Fine-tuning any model - prompting + retrieval is sufficient and more
   transferable to any provider
-- CI/CD, blue-green/canary deploys — one-command local Docker Compose is
+- CI/CD, blue-green/canary deploys - one-command local Docker Compose is
   the deployment bar the brief actually asks for
 
 ## 4. Key User Flows
@@ -141,4 +141,4 @@ on cloud (Gemini/Groq).
 | Unsafe artifact rendering | Sandboxed iframe, no `allow-scripts`, Markdown HTML-passthrough disabled |
 | Two-runtime complexity (Python + Node agent service) | Documented explicitly as a consequence of the brief's own FastAPI + Pi requirement, kept to one thin internal HTTP boundary, not a distributed system |
 | Data leakage | No data sent to any provider beyond the current session's necessary retrieved context |
-| Cost | $0 — all providers used have genuinely free tiers, no card required |
+| Cost | $0 - all providers used have genuinely free tiers, no card required |

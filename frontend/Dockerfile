@@ -1,4 +1,4 @@
-# Stage 1: Builder — installs deps and produces a static build
+# Stage 1: Builder - installs deps and produces a static build
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -18,7 +18,7 @@ ENV VITE_API_URL=${VITE_API_URL}
 RUN npm run build
 
 
-# Stage 2: Runner — nginx:alpine serves the static bundle (~25MB total image)
+# Stage 2: Runner - nginx:alpine serves the static bundle (~25MB total image)
 FROM nginx:1.27-alpine AS runner
 
 # SPA routing: all unknown paths serve index.html so React Router handles them

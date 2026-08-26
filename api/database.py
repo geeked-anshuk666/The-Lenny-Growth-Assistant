@@ -48,6 +48,7 @@ class MessageModel(Base):
     role: Mapped[str] = mapped_column(String)  # 'user' | 'assistant'
     content: Mapped[str] = mapped_column(Text)
     provider: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    citations: Mapped[Optional[dict]] = mapped_column("citations", JSON, nullable=True, server_default=text("'[]'::jsonb"))
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=text("now()"))
 
 class ArtifactModel(Base):
@@ -80,3 +81,6 @@ async def init_db():
         # Create vector extension if not exists
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         await conn.run_sync(Base.metadata.create_all)
+        # Ensure citations column exists on messages table
+        await conn.execute(text("ALTER TABLE messages ADD COLUMN IF NOT EXISTS citations JSONB DEFAULT '[]'::jsonb;"))
+

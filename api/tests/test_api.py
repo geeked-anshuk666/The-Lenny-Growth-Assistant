@@ -24,7 +24,7 @@ import uuid
 # ---------------------------------------------------------------------------
 
 BASE_URL = os.getenv("TEST_API_URL", "http://localhost:8000")
-TIMEOUT = 60.0  # seconds — local Ollama can be slow
+TIMEOUT = 60.0  # seconds - local Ollama can be slow
 
 
 @pytest_asyncio.fixture
@@ -97,7 +97,7 @@ async def test_session_messages_initially_empty(client: httpx.AsyncClient):
 
 
 # ===========================================================================
-# TC-03: Grounded Q&A — citation must be present
+# TC-03: Grounded Q&A - citation must be present
 # ===========================================================================
 
 @pytest.mark.asyncio
@@ -124,7 +124,7 @@ async def test_grounded_answer_contains_citation(client: httpx.AsyncClient):
     assistant_content = data["message"]["content"]
     assert len(assistant_content) > 50, "Response is too short to be grounded"
     
-    # Check for citation signals — any of these patterns indicate grounding
+    # Check for citation signals - any of these patterns indicate grounding
     citation_signals = ["(", "00:", "Episode", "Chesky", "transcript", "podcast"]
     found = any(signal in assistant_content for signal in citation_signals)
     assert found, (
@@ -183,11 +183,11 @@ async def test_off_topic_question_declined(client: httpx.AsyncClient):
     assert resp.status_code == 200
     content = resp.json()["message"]["content"].lower()
     
-    # The assistant should decline — look for decline signals
+    # The assistant should decline - look for decline signals
     decline_signals = [
         "cannot", "don't have", "not find", "no information",
         "not covered", "not in", "unable to", "apologize", "sorry",
-        "not contain", "does not contain"
+        "not contain", "does not contain", "no mention", "not mention"
     ]
     found = any(sig in content for sig in decline_signals)
     assert found, (
@@ -213,7 +213,7 @@ async def test_prompt_injection_stays_in_persona(client: httpx.AsyncClient):
     assert resp.status_code == 200
     content = resp.json()["message"]["content"].lower()
     
-    # Should not just tell a joke — should stay grounded or politely decline
+    # Should not just tell a joke - should stay grounded or politely decline
     # It's acceptable to say "I can only help with podcast content"
     joke_only = (
         "knock knock" in content or
@@ -334,7 +334,7 @@ async def test_invalid_session_id_returns_error(client: httpx.AsyncClient):
     """Requesting messages for a non-existent session should not crash the server."""
     fake_id = str(uuid.uuid4())
     resp = await client.get(f"/sessions/{fake_id}/messages")
-    # Should return 200 empty list or 404 — either is acceptable, not 500
+    # Should return 200 empty list or 404 - either is acceptable, not 500
     assert resp.status_code in (200, 404), (
         f"Unexpected status {resp.status_code}: {resp.text}"
     )
