@@ -117,6 +117,42 @@ See `docs/testing_strategy.md` for the full test plan.
 | Groq rate limit warning in UI | The UI will auto-switch to a fallback model and show an amber banner |
 | Docker Ollama connectivity | Set `OLLAMA_BASE_URL=http://host.docker.internal:11434` in `.env` for Docker containers to reach the host Ollama |
 
+## 🏗️ Architecture Decisions & Tech Stack Rationale
+
+### 1. The Two-Runtime Split (Python + Node.js)
+To support the Pi Coding Agent engine (`pi-ai` and `pi-agent-core` which are TypeScript-native) while maintaining a FastAPI Python backend, the system is split into two runtimes.
+- **FastAPI (Python):** Handles RAG database operations, document ingestion, session/message REST APIs, and citation formatting.
+- **Agent Service (Node.js):** Runs as an internal service to coordinate LLM calls, tool execution, and provider fallbacks.
+- **Internal Boundary:** Communication is restricted to a single internal HTTP boundary (`POST /agent/generate` and `GET /provider/models`). The Agent Service is never exposed to the public internet.
+
+### 2. NeonDB Postgres + pgvector
+- Managed serverless Postgres with native vector support.
+- Embeddings are stored in a 384-dimensional `vector` column in `transcript_chunks`.
+- Vector similarity uses Postgres-native cosine distance (`<=>`), running directly inside the DB engine for high performance.
+
+### 3. Local sentence-transformers Embeddings
+- Instead of using a cloud embedding API which introduces network latency and rate limits, a local `sentence-transformers/all-MiniLM-L6-v2` model is loaded at runtime.
+- Pre-downloaded and cached inside the Python Docker image during the build stage to guarantee offline compatibility and instant container startup.
+
+---
+
+## ⚖️ Trade-offs & Known Limitations
+
+### 1. Local LLM Size vs. Generation Quality (3B Model)
+- **Trade-off:** The default local Ollama model is `qwen2.5:3b`. A 3B model is optimized for fast local CPU execution and low memory consumption (under 4GB RAM), but it can struggle with complex structuring tasks like generating full 1,250-word Ship 30/30 essays.
+- **Recommendation:** For full quality compliance and essay length, use the cloud Gemini or Groq providers, or pull `qwen2.5:7b` if you have 8GB+ VRAM.
+
+### 2. Static Corpus Ingestion
+- **Limitation:** Ingestion is a one-off, manual step (`python ingest.py`). There is no live scraping or real-time RSS feed parsing. This is a deliberate simplification to focus on the retrieval, grounding, and citation engine.
+
+### 3. Ollama GPU Passthrough in Docker
+- **Limitation:** Ollama is left running as a host-level process (`http://localhost:11434` or bridged via `host.docker.internal`). Containerizing Ollama with GPU support across multiple operating systems (especially Windows/WSL2 and macOS) is highly unreliable for a portable demo setup.
+
+### 4. Single-Tenant Session Model
+- **Trade-off:** The project uses session-based tracking via client-side generated UUIDs. There is no user authentication, authorization, or database row-level security. This is optimized for quick local evaluation.
+
+---
+
 ## Project structure
 
 ```

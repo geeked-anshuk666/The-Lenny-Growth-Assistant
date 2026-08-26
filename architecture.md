@@ -129,3 +129,16 @@ Docker Compose passes `GEMINI_API_KEY`, `GROQ_API_KEY`, `GROQ_MODEL`,
 `GEMINI_MODEL`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `NEON_DATABASE_URL`,
 `LLM_PROVIDER`, `LLM_PROVIDER_FALLBACK` from the root `.env` file to
 each container via `environment:` blocks.
+
+## 8. Tech Stack Rationale
+
+- **FastAPI / Python:** Standard backend interface choice for microservices. High performance, native typing, and direct integration with Python-native data libraries (`sentence-transformers`, `numpy`).
+- **Node.js Agent runtime:** TypeScript wrapper around Pi agent execution core. Since the Pi unified model provider and agent framework only target TS/JS runtimes, this separate helper service is the most logical way to execute the agent.
+- **NeonDB Serverless Postgres:** Scalable cloud Postgres with pgvector pre-installed. Eliminates local Postgres configuration overhead, maintains database states cleanly across containers, and provides instant scaling capabilities.
+- **sentence-transformers/all-MiniLM-L6-v2:** Produces 384-dimensional vector embeddings locally on CPU. Faster than calling remote embeddings APIs, incurs zero running cost, and has zero external network latency dependency.
+
+## 9. Trade-offs & Limitations
+
+- **Model Capabilities vs. Local Memory:** Running `qwen2.5:3b` locally requires <4GB of memory but yields lower essay generation capabilities compared to cloud APIs (Gemini/Groq). This is documented as a trade-off where cloud represents the quality standard, and local acts as the fallback.
+- **Offline / Isolated Ingestion:** Since transcript data is a static 269-episode corpus, we chose offline ingestion via a one-off Python script rather than maintaining a live data-sync connector (cron job/webhook). This saves compute resources and guarantees vector database static sanity.
+- **Container Isolation of LLM Runtime:** The Node agent service is fully isolated inside the internal Docker network. The public frontend can only talk to FastAPI, which acts as a secure, authenticated gatekeeper proxy for LLM generation.

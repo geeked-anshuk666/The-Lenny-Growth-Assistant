@@ -73,3 +73,9 @@
 - **Icons:** `lucide-react` icon library throughout.
 - **Animations:** CSS bounce for typing indicator, Tailwind transitions
   for hover states, `animate-pulse` for the live-status indicator.
+
+## UI Design Decisions & Trade-offs
+
+- **Rate-Limit Visibility vs. UX Friction:** When a rate limit is encountered on a cloud provider, we opted to automatically fallback and resume the generation instead of blocking the user with a strict blocker modal. To keep this transition honest, an amber notification banner shows the fallback event, and the model selector updates dynamically to the model currently serving the response.
+- **Sandboxed Artifact Rendering over Raw HTML Injection:** Injecting raw model-generated HTML directly into the web DOM poses security (XSS) risks. We made a deliberate trade-off to render HTML inside a sandboxed `<iframe>` with `sandbox="allow-same-origin"` (without `allow-scripts`). This restricts executing nested JavaScript scripts while maintaining correct layout styling.
+- **Persistent Multi-Pane Layout:** Instead of stacking chats and generated documents in a single scrolling thread, the workspace uses a three-column sidebar-chat-artifact design. This allows growth operators to read and copy generated summaries in a dedicated side panel while refining queries in the primary chat history.
