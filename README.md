@@ -153,6 +153,26 @@ To support the Pi Coding Agent engine (`pi-ai` and `pi-agent-core` which are Typ
 
 ---
 
+## 🚫 Out of Scope (Currently)
+
+The following capabilities are deliberately omitted from the current scope to maintain simplicity and focus on RAG precision:
+1. **User Authentication & Authorization (Auth):** No user signup, login, session cookies, RBAC (Role-Based Access Control), or database-level row isolation.
+2. **API Rate Limiting:** The FastAPI server does not enforce IP-level or token-level rate limiting on endpoints (outside of the fallback logic when handling remote LLM API provider 429 errors).
+3. **Caching Layer:** No Redis or database query caching is implemented. Every query triggers a fresh vector search and LLM call.
+4. **Horizontal Scaling:** Single container processes (no load balancers, Kubernetes ingress routing, or distributed task queues like Celery).
+
+---
+
+## 🔮 Future Enhancements
+
+Planned upgrades for transition to production environments:
+1. **Production Auth Integration:** Introduce Clerk or Supabase Auth to enable user accounts, private session histories, and data isolation at the ORM layer.
+2. **Endpoint Rate Limiting:** Add `slowapi` (limiter decorator) in FastAPI to protect endpoints from scraping and API exhaustion attacks.
+3. **Vector Cache:** Add a Redis semantic caching layer to instantly return cached answers for identical/highly similar user queries, reducing LLM costs.
+4. **Model Auto-Rotation Policies:** Upgrade model auto-rotation logic to prioritize low-latency local execution unless complex formatting (Ship 30/30) is requested.
+
+---
+
 ## Project structure
 
 ```

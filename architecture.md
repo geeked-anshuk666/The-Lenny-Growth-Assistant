@@ -142,3 +142,15 @@ each container via `environment:` blocks.
 - **Model Capabilities vs. Local Memory:** Running `qwen2.5:3b` locally requires <4GB of memory but yields lower essay generation capabilities compared to cloud APIs (Gemini/Groq). This is documented as a trade-off where cloud represents the quality standard, and local acts as the fallback.
 - **Offline / Isolated Ingestion:** Since transcript data is a static 269-episode corpus, we chose offline ingestion via a one-off Python script rather than maintaining a live data-sync connector (cron job/webhook). This saves compute resources and guarantees vector database static sanity.
 - **Container Isolation of LLM Runtime:** The Node agent service is fully isolated inside the internal Docker network. The public frontend can only talk to FastAPI, which acts as a secure, authenticated gatekeeper proxy for LLM generation.
+
+## 10. Out of Scope (Current Architecture Boundaries)
+
+- **User Access Delegation & Row Isolation:** Database tables (`sessions`, `messages`, `artifacts`) do not enforce user-level foreign key locks or data partitioning. All endpoints read and write globally based on the UUID requested.
+- **DDoS and Request Exhaustion Controls:** There is no API Gateway (like Kong or AWS API Gateway) or rate limiter middleware to throttle client connection frequencies.
+- **In-Memory Caching Topology:** The system operates without an intermediate caching layer (e.g., Redis). Every HTTP message triggers fresh database transaction IO and vector compute operations.
+
+## 11. Future Architecture Enhancements
+
+- **Identity Provider (IdP) Gatekeeper:** Integrate a third-party auth middleware (e.g. Clerk SDK) in the FastAPI request pipeline to validate JWTs and restrict SQLAlchemy queries to the authenticated user's scope.
+- **Rate-Limiting Middleware:** Install a Redis-backed rate limiter on the FastAPI origin to defend database and external model endpoints from abuse.
+- **Vector Semantic Cache:** Introduce an in-memory vector cache layer (e.g., Redis VL) to intercept queries. If a matching query exists within a 0.95 similarity threshold, serve the cached answer immediately to save remote token consumption and CPU cycles.
